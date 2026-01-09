@@ -291,7 +291,85 @@ movement(v, R, C, Steps, NewR, C) :-
 %%%%                                   %%%%
 %%%%%                                 %%%%%
 % ----------- PARTE IV.------------------ %
-%%%%%                                 %%%%%  
+%%%%%       
+                          %%%%%  
 %%%%                                   %%%%
 %%%                                     %%%
 
+solveRushHour(StartBoard, Solution) :-
+    % La agenda inicial tiene un solo camino: [ (StartBoard, init) ]
+    % init es solo para empezar, unificará con el primero
+    bfs([ [(StartBoard, init)] ], [], SolutionRev),
+    
+    % El BFS devuelve la solución al revés, hay que voltearla
+    sacar_movimientos(SolutionRev, Solution).
+
+% caso base, el primer camino de la agenda llega al destino
+bfs([ [(EstadoActual, Movimientos) | RestoCaminos] | _ ], _ , [ (EstadoActual | Movimientos) | RestoCaminos]) :-
+    es_solucion(EstadoActual) . % verifica si el estado actual es meta
+
+% caso recursivo -> explorar
+bfs([ CaminoActual | RestoAgenda ], Visitados, Solucion) :-
+    CaminoActual = [ (EstadoActual, _) | _ ], % Extraemos el estado actual (cabeza del camino)
+    
+    % 1. GENERADOR 
+    % Buscamos todos los movimientos posibles desde EstadoActual
+    findall(
+        [(NuevoEstado, (ID, Steps)) | CaminoActual], % Construimos el nuevo camino extendido
+        (
+            % Lógica del generador:
+            member(Vehiculo, EstadoActual),       % A. Elige un vehículo de la lista
+            Vehiculo = vehicle(ID, _, _, _, _),   %    Extrae su ID
+            generar_pasos(Steps),                 % B. Propone unos pasos (ej: -2, -1, 1, 2)
+            
+            % C. Valida en la LISTA 
+            es_valido_en_lista(EstadoActual, ID, Steps), 
+            
+            % D. Genera el nuevo estado
+            moveVehicle(EstadoActual, ID, Steps, NuevoEstado),
+            
+            % E. Verifica que no sea un estado repetido (Ciclos)
+            \+ member(NuevoEstado, Visitados)
+        ),
+        NuevosCaminos
+    ),
+    % 2. Actualizar Visitados (Extraer los estados de los nuevos caminos)
+    extraer_estados(NuevosCaminos, NuevosEstados),
+    append(Visitados, NuevosEstados, NuevosVisitados),
+    
+    % 3. Agregar al FINAL de la agenda (Cola FIFO -> BFS)
+    append(RestoAgenda, NuevosCaminos, NuevaAgenda),
+    
+    % 4. Recursión
+    bfs(NuevaAgenda, NuevosVisitados, Solucion).
+
+arco(0,2,2).
+arco(0,1,4).
+arco(2,3,1).
+arco(1,3,2).
+arco(1,4,5).
+arco(3,4,1).
+arco(3,5,1).
+arco(4,5,2).
+% origen y destino permutados
+arco(2,0,2).
+arco(1,0,4).
+arco(3,2,1).
+arco(3,1,2).
+arco(4,1,5).
+arco(4,3,1).
+arco(5,3,1).
+arco(5,4,2).
+
+visitado(X). % X ya ha sido visitado en la búsqueda
+
+camino(U, V) :- arco(U, V, _).
+camino(U, V) :- arco(U, X, _),
+                not(visitado(X)) ,
+                assertz(visitado(X)) ,
+                camino(X, V).
+
+% lo siguiente funciona como un reset de la ejecución
+caminoi(U, V) :-    retractall(visitado(_)) ,
+                    assert(visitado(U)) ,
+                    camino(U, V).
