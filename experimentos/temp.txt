@@ -178,24 +178,43 @@ chocanCarros(MyID, PathCells) :-
 %%%                                     %%%
 
 
-% CASO 1: Encontramos el vehículo objetivo (Aquí usamos el mismo ID)
+% el vehículo actual es el vehículo que encaja por ID -> usando v(...)
+moveVehicle(
+    [v(ID, Or, R, C, L) | RV],
+    ID, Steps, [FV | RV]) :-
+
+    % definimos el nuevo lugar del vehículo (cabeza)
+    movement(Or, R, C, Steps, NewR, NewC) ,
+
+    % definimos el Primer Vehículo con su nueva posición
+    FV = vehicle(ID, Or, NewR, NewC, L), !. % y cortamos
+
+
+% el vehículo actual No es el vehículo a mover -> usando v(...)
+moveVehicle([v(ID, Or, R, C, L) | RV] ,
+        ID, Steps, [v(_, Or, R, C, L) | NewState]) :-
+    
+    % se ignora el vehículo actual y se llama al predicado nuevamente
+    moveVehicle(RV, ID, Steps, NewState).
+    % el vehículo actual es el vehículo que encaja por ID -> usando v(...)
+
 moveVehicle(
     [vehicle(ID, Or, R, C, L) | RV],
     ID, Steps, [FV | RV]) :-
-    
+
+    % definimos el nuevo lugar del vehículo (cabeza)
     movement(Or, R, C, Steps, NewR, NewC) ,
-    FV = vehicle(ID, Or, NewR, NewC, L), !. 
 
-% CASO 2: NO es el vehículo objetivo (Usamos variables DISTINTAS)
-moveVehicle([vehicle(CocheActualID, Or, R, C, L) | RV],
-        TargetID, Steps, [vehicle(CocheActualID, Or, R, C, L) | NewState]) :-
+    % definimos el Primer Vehículo con su nueva posición
+    FV = vehicle(ID, Or, NewR, NewC, L), !. % y cortamos
+
+
+% el vehículo actual No es el vehículo a mover -> usando v(...)
+moveVehicle([vehicle(ID, Or, R, C, L) | RV] ,
+        ID, Steps, [vehicle(_, Or, R, C, L) | NewState]) :-
     
-    % Verificamos que sean diferentes
-    CocheActualID \= TargetID,
-
-    % Seguimos buscando recursivamente
-    moveVehicle(RV, TargetID, Steps, NewState).
-
+    % se ignora el vehículo actual y se llama al predicado nuevamente
+    moveVehicle(RV, ID, Steps, NewState).
 
 % definimos la nueva posición del vehículo
 % Caso Horizontal: Se mantiene R, cambia C
@@ -215,27 +234,33 @@ movement(v, R, C, Steps, NewR, C) :-
 %%%%                                   %%%%
 %%%                                     %%%
 
-% primero debemos normalizar la entrada
-
-% Traduce la lista completa del tablero
-normalizar_tablero([], []).
-normalizar_tablero([H|T], [HNorm|TNorm]) :-
-    normalizar(H, HNorm),
-    normalizar_tablero(T, TNorm).
-
 solveRushHour(StartBoard, Solution) :-
-
-    normalizar_tablero(StartBoard, TableroNormalizado) ,
-
     % La agenda inicial tiene un solo camino: [ (StartBoard, init) ]
     % init es solo para empezar, unificará con el primero
-    bfs([ (TableroNormalizado, []) ], [], Solution).
+    bfs([ (StartBoard, []) ], [], Solution).
 
 % caso base: el estado actual es el estado solución
 bfs([ (EstadoActual, Movimientos) | _ ] , _ , SolRev) :-
     es_solucion(EstadoActual) , 
     
     reverse(Movimientos, SolRev), !. % verifica si el estado actual es meta y sea la primera
+
+% definimos si el tablero actual es solución
+es_solucion([ vehicle(0, _, _, C, L)| _]) :-
+    6 == C + L.
+
+% si el vehículo actual no es el rojo buscamos el siguiente
+es_solucion([ _ | RV]) :-
+    es_solucion(RV).
+
+% usamos el reverse eficiente -> con acumulador
+reverse(MovimientosRev, Movimientos) :-
+    reverseAcc(MovimientosRev, [], Movimientos) .
+
+% vamos llenando un acumulador paulatinamente
+reverseAcc([], Acc, Acc).
+reverseAcc([M | RV], [M | Acc] , NuevosMovimientos) :-
+    reverseAcc(RV, Acc, NuevosMovimientos).
 
 % caso recursivo 1: el estado actual No está repetido y tampoco es solución -> explorar
 bfs([ (EstadoActual, Movs) | RestoCams ], Visitados, Solucion) :-
@@ -264,25 +289,6 @@ bfs([ (EstadoActual, _) | RestoCams ], Visitados, Solucion) :-
 
     % ignoramos el estado actual y continuamos
     bfs(RestoCams, Visitados, Solucion).
-
-
-% Caso 1: El vehículo 0 está en la cabeza y toca la salida (Col + Len = 6)
-es_solucion([vehicle(0, _, _, C, L) | _]) :-
-    Limit is C + L,
-    Limit >= 6, !.
-
-% Caso 2: El vehículo 0 no es la cabeza, buscamos en el resto
-es_solucion([_ | Resto]) :-
-    es_solucion(Resto).
-
-% usamos el reverse eficiente -> con acumulador
-reverse(MovimientosRev, Movimientos) :-
-    reverseAcc(MovimientosRev, [], Movimientos) .
-
-% vamos llenando un acumulador paulatinamente
-reverseAcc([], Acc, Acc).
-reverseAcc([M | RV], Acc , NuevosMovimientos) :-
-    reverseAcc(RV, [M | Acc], NuevosMovimientos).
 
 % definición del generador del predicado generador de nuevos caminos
 generarNuevosCaminos((Tablero, MovsPrevios), TableroCompleto, NuevosCaminos) :-
@@ -317,9 +323,7 @@ recolectar_movimientos_id(ID, Tablero, MovsPrevios, ListaHijos) :-
     try_step(ID, 3, Tablero, MovsPrevios, L4, L5),
     try_step(ID, -3, Tablero, MovsPrevios, L5, L6),
     try_step(ID, 4, Tablero, MovsPrevios, L6, L7),
-    try_step(ID, -4, Tablero, MovsPrevios, L7, ListaInvertida),
-
-    reverse(ListaInvertida, ListaHijos).
+    try_step(ID, -4, Tablero, MovsPrevios, L7, ListaHijos).
 
 % Helper: Intenta un paso. Si es válido, lo agrega. Si no, devuelve el acumulador igual.
 try_step(ID, Steps, Tablero, MovsPrevios, Accum, NewAccum) :-
