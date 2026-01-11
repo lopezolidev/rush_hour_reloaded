@@ -53,7 +53,7 @@ Para evitar el problema del **"Efecto Túnel"** (donde un carro "salta" un obst�
 
 1.  Abra SWI-Prolog y cargue el archivo del proyecto:
     ```prolog
-    ?- [nombre_del_archivo].
+    ?- [Proyecto2].
     ```
 
 2.  Ejecute el predicado `solveRushHour` con una configuración inicial. Ejemplo:
@@ -117,7 +117,7 @@ To avoid the **"Tunneling Effect"** (where a car "jumps" over an obstacle if mov
 
 1.  Open SWI-Prolog and load the project file:
     ```prolog
-    ?- [project_file_name].
+    ?- [Proyecto2].
     ```
 
 2.  Run the `solveRushHour` predicate with an initial configuration. Example:
