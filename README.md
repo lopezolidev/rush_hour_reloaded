@@ -67,6 +67,12 @@ Para evitar el problema del **"Efecto Túnel"** (donde un carro "salta" un obst�
     Solution = [(1, 3), (0, 4)].
     ```
 
+### Referencias y Bibliografía
+* **Blackburn, P., Bos, J., & Striegnitz, K.** *Learn Prolog Now!*. (Disponible en [learnprolognow.org](http://www.learnprolognow.org/)).
+    * Utilizado como guía principal para la sintaxis de Prolog, recursión, listas y la lógica detrás de los Cortes (`!`) y la Negación.
+* **Rosen, K. H.** *Discrete Mathematics and Its Applications*. McGraw-Hill Education.
+    * La definición formal y el pseudocódigo del algoritmo de **Búsqueda en Anchura (BFS)** utilizado en este proyecto se basaron en los capítulos de Teoría de Grafos de este libro.
+
 ---
 
 
@@ -130,6 +136,12 @@ To avoid the **"Tunneling Effect"** (where a car "jumps" over an obstacle if mov
     ```prolog
     Solution = [(1, 3), (0, 4)].
     ```
+
+### References & Acknowledgments
+* **Blackburn, P., Bos, J., & Striegnitz, K.** *Learn Prolog Now!*. (Available online at [learnprolognow.org](http://www.learnprolognow.org/)).
+    * Used as the primary guide for Prolog syntax, recursion, lists, and the logic behind Cuts (`!`) and Negation.
+* **Rosen, K. H.** *Discrete Mathematics and Its Applications*. McGraw-Hill Education.
+    * The formal definition and pseudocode of the **Breadth-First Search (BFS)** algorithm used in this project were based on the Graph Theory chapters of this book.
 
 ---
 [Go to Spanish Version / Ir a la versión en Español](#versión-en-español)
