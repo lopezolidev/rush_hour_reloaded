@@ -150,7 +150,7 @@ dentroTablero([(X, Y) | Cells]) :-
     dentroTablero(Cells).
 
 chocanCarros(MyID, PathCells) :-
-    % 1. GENERADOR: Llamamos a la BD. 
+    % 1. GENERADOR: Llamamos a la BC. 
     % Prolog pausa aquí, trae el primer carro, y si falla más abajo, 
     % vuelve aquí y trae el segundo.
     vehicle(OtherID, Or, Row, Col, Len),
@@ -227,8 +227,7 @@ solveRushHour(StartBoard, Solution) :-
 
     normalizar_tablero(StartBoard, TableroNormalizado) ,
 
-    % La agenda inicial tiene un solo camino: [ (StartBoard, init) ]
-    % init es solo para empezar, unificará con el primero
+    % La agenda inicial tiene un solo camino: [ (StartBoard, []) ]
     bfs([ (TableroNormalizado, []) ], [], Solution).
 
 % caso base: el estado actual es el estado solución
