@@ -1,5 +1,9 @@
 :- dynamic vehicle/5.
 
+% INTEGRANTES:
+% ROCAFULL RUGGIERI ORIANA CAROLINA - C.I: 25386529 
+% LOPEZ OLIVERA SERGIO JAVIER - C.I: 26272957
+
 % Convierte v(...) a vehicle(...)
 normalizar(v(Id, Or, R, C, L), vehicle(Id, Or, R, C, L)).
 
